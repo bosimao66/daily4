@@ -1,15 +1,18 @@
 
 
 ####sourceInsignt 文件夹
-si4/*
+#si4/*
 
 
 ####工作空间
-wkspace/user/*
+#wkspace/user/*
 
 
 ####备份
-备份/si4/*
+#备份/si4/*
+
+####调试
+qt/build-dialy4-Desktop_Qt_5_9_0_MinGW_32bit-Debug/*
 
 
 
