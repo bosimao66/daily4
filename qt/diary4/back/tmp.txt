@@ -1,0 +1,255 @@
+﻿
+
+//###########################################链表头文件
+
+/*
+
+（1）用于窗口tab对象的链表定义
+应该可以用 类来描述，才符合c++风格，但是我不太熟，打算后面再来思考，当做拓展。
+
+（2）单向链表
+*/
+
+#ifndef TABLINK_H
+#define TABLINK_H
+
+#include "QString"
+
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QTextEdit>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QWidget>
+#include <QtWidgets/QTabWidget>
+
+//结构体
+typedef struct STRUCT_TAB_INFOtmp{
+    QString title;
+    QString week;
+    QString weather;
+    QString mainBody;
+    QString fileName;
+    QString dir;
+    QString status;//状态栏信息
+    QString tabName;//tab名
+    int year;
+    int month;
+    int day;
+    int hour;
+    int minute;
+    int isNew;//是否为新文件的标志（1为新文件， 0为非新文件）
+    int fileNameExit;//文件名是否存在（1为存在， 0为不存在）
+    int dirExit;//路径是否存在（1位存在，0为不存在）
+}STRUCT_TAB_INFO;
+
+typedef struct STRUCT_TAB_UItmp{
+    QWidget *uiEdit_tab;//指向文本编辑对象所在的widget
+    QLineEdit *uiEdit_title;//指向标题控件
+    QLineEdit *uiEdit_dateYear;//指向 日期“年” 这个控件
+    QLineEdit *uiEdit_dateMonth;//指向 日期“月” 这个控件
+    QLineEdit *uiEdit_dateDay;//指向 日期“日” 这个控件
+    QLineEdit *uiEdit_timeHour;//指向 时间“小时” 这个控件
+    QLineEdit *uiEdit_timeMinute;//指向 时间“分” 这个控件
+    QLineEdit *uiEdit_weather;//指向 天气 控件
+    QLineEdit *uiEdit_week;//指向 星期 控件
+    QTextEdit *uiEdit_mainBody;//指向 主体文本编辑 控件
+}STRUCT_TAB_UI;
+
+
+typedef struct STRUCT_TAB_OBJtmp{
+    STRUCT_TAB_INFO info;
+    STRUCT_TAB_UI ui;
+    struct STRUCT_TAB_OBJtmp *next;
+}STRUCT_TAB_OBJ;
+
+
+
+STRUCT_TAB_OBJ *tabLinkFun_create();
+void tabLinkFun_destory(STRUCT_TAB_OBJ *head);
+STRUCT_TAB_OBJ *tabLinkFun_add(STRUCT_TAB_OBJ *head);
+void tabLinkFun_del(STRUCT_TAB_OBJ *head, int index);
+STRUCT_TAB_OBJ *tabLinkFun_get(STRUCT_TAB_OBJ *head, int index);
+int tabLinkFun_total(STRUCT_TAB_OBJ *head);
+void tabLinkFun_test();
+
+
+#endif // TABLINK_H
+
+
+//==================================================================
+
+
+
+//######################################################链表源文件
+
+
+
+#include "tablink.h"
+#include "QDebug"
+
+//STRUCT_TAB_OBJ tabLinkVar_head;
+//STRUCT_TAB_OBJ *tabLinkVar_head_p;
+
+
+//创建链表并初始化（返回链表头）
+STRUCT_TAB_OBJ *tabLinkFun_create()
+{
+    STRUCT_TAB_OBJ *head = (STRUCT_TAB_OBJ *)malloc(sizeof(STRUCT_TAB_OBJ));
+    head->next = NULL;
+    return head;
+}
+
+//摧毁链表
+void tabLinkFun_destory(STRUCT_TAB_OBJ *head)
+{
+
+    STRUCT_TAB_OBJ *last = NULL;
+
+    while(head->next != NULL)
+    {
+        STRUCT_TAB_OBJ *prob = head;
+        while(prob->next != NULL)
+        {
+            last = prob;
+            prob = prob->next;
+        }
+        free(prob);
+        last->next = NULL;
+
+    }
+    free(head);
+}
+
+//增加节点（末尾添加）
+STRUCT_TAB_OBJ *tabLinkFun_add(STRUCT_TAB_OBJ *head)
+{
+    STRUCT_TAB_OBJ *node = (STRUCT_TAB_OBJ *)malloc(sizeof(STRUCT_TAB_OBJ));
+
+    STRUCT_TAB_OBJ *prob = head;
+    while(prob->next != NULL)
+    {
+        prob = prob->next;
+    }
+    prob->next = node;
+    node->next = NULL;
+    return node;
+}
+
+
+//删除节点(指定第几个节点，节点从0开始计数（不包括链表头），和tabWidget的index对应)
+void tabLinkFun_del(STRUCT_TAB_OBJ *head, int index)
+{
+    //如果index不在范围之内，则不会有删除动作
+    int cnt = 0;
+    STRUCT_TAB_OBJ *prob = head;
+    while(prob->next != NULL)
+    {
+        if (cnt == index)
+        {
+            free(prob->next);
+            prob->next = prob->next->next;
+            return;
+        }
+        prob = prob->next;
+        cnt ++;
+    }
+}
+
+//改和查（根据索引来查）
+STRUCT_TAB_OBJ *tabLinkFun_get(STRUCT_TAB_OBJ *head, int index)
+{
+    int cnt = 0;
+    STRUCT_TAB_OBJ *prob = head;
+    while(prob->next != NULL)
+    {
+        if (cnt == index)
+        {
+            return prob->next;
+        }
+        prob = prob->next;
+        cnt ++;
+    }
+    return NULL;
+}
+
+//个数计算
+int tabLinkFun_total(STRUCT_TAB_OBJ *head)
+{
+    int cnt = 0;
+    STRUCT_TAB_OBJ *prob = head;
+    while(prob->next != NULL)
+    {
+        prob = prob->next;
+        cnt ++;
+    }
+    return cnt;
+}
+
+
+
+
+
+//测试(1)遍历打印文件名
+void tabLinkFun_testPintName(STRUCT_TAB_OBJ *head)
+{
+    qDebug()<<"-----------link test------------";
+    STRUCT_TAB_OBJ *prob = head;
+    while(prob->next != NULL)
+    {
+        prob = prob->next;
+        qDebug()<<"fileName"<<prob->next->info.fileName;
+    }
+
+}
+
+void tabLinkFun_test()
+{
+    STRUCT_TAB_OBJ *head = tabLinkFun_create();
+    STRUCT_TAB_OBJ *node1 = tabLinkFun_add(head);
+    STRUCT_TAB_OBJ *node2 = tabLinkFun_add(head);
+    STRUCT_TAB_OBJ *node3 = tabLinkFun_add(head);
+    node1->info.fileName.append("aa");
+    node2->info.fileName.append("cc");
+    node3->info.fileName.append("dd");
+    /*tabLinkFun_testPintName(head);*/
+}
+//===============================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

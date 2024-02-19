@@ -1,0 +1,120 @@
+﻿#include "cloudfile.h"
+#include "ui_cloudfile.h"
+#include <QDebug>
+
+cloudFile::cloudFile(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::cloudFile)
+{
+    ui->setupUi(this);
+}
+
+cloudFile::~cloudFile()
+{
+    delete ui;
+}
+
+
+
+
+
+void cloudFile::on_pushButton_clicked()
+{
+
+    QTcpSocket *sock =  new QTcpSocket(this);
+    sock->open(QIODevice::WriteOnly);
+    sock->connectToHost(QString("192.168.137.20"), 10086);
+    if (sock->waitForConnected(200))
+    {
+        qDebug()<<"connect is successful";
+        sendData(sock);
+
+    }
+    else
+    {
+        qDebug()<<"connect is faild";
+    }
+    sock->close();
+}
+
+//写入数据
+/*
+接收到数据结构的约定
+字节[0-1]:数据头长度（改长度包括了自己，dataHeadLength）
+[2-5]:数据的长度（dataLength  4字节）
+[6-6]:文件类型（可以是：参数表、数据表等线性表，这里可以对不同的文件类型做相应的处理。或许可以省略操作方式这个参数）
+[7-8]:文件名尾部对应的字节序号（fileNameEndNum）
+[9-fileNameEndNum]:文件名（注意：长度不能超过数据头的设置）
+[dataHeadLength - 1, dataLength - 1]：文件数据
+注：二进制文本和字符文本问题、byte数据的符号问题
+最小字节，就是文件名一个字符，数据为空，即0-9共10个字节
+*/
+
+void cloudFile::sendData(QTcpSocket *socket)
+{
+       QByteArray block;
+       //使用数据流写入数据
+       QDataStream out(&block, QIODevice::ReadWrite);
+       //设置数据流的版本，客户端和服务器端使用的版本要相同
+       out.setVersion(QDataStream::Qt_4_6);
+       //填入空的头文件长度、数据长度
+       out<<(quint16) 0;
+       out<<(quint32) 0;
+       //填入文件模式
+       out<<(quint16) 3;
+       //填入文件名尾部对应的字节序号
+       out<<(quint16) 0;
+       //填入文件名
+       QString name("gitkk.txt");
+       //out<< name.toLatin1();
+        out<<"gitkk.txt";
+       qDebug()<<(char)block[9];
+       qDebug()<<(char)block[10];
+       qDebug()<<(char)block[11];
+       qDebug()<<(char)block[12];
+
+       quint16 fileNameEndNum = 9 + name.length();
+       quint16 dataHeadLength = 9 + name.length();
+       block[0] = (fileNameEndNum & 0xff00) >> 8;
+       block[1] = fileNameEndNum & 0xff;
+       block[7] = (dataHeadLength & 0xff00) >> 8;
+       block[8] = dataHeadLength & 0xff;
+       //填入数据
+       QString data("这是一个测试数据\n换行...");
+       out<< data.toLatin1();
+
+
+       quint32 dataLength = data.length();
+       block[2] = (dataLength & 0xff000000) >> 24;
+       block[3] = (dataLength & 0xff0000) >> 16;
+       block[4] = (dataLength & 0xff00) >> 8;
+       block[5] = (dataLength & 0xff) ;
+
+       socket->write(block);
+
+       socket->close();
+}
+
+
+
+void cloudFile::on_pushButton_2_clicked()
+{
+    QTcpServer *service = new  QTcpServer(this);
+    QHostAddress addr("192.168.137.20");
+    if(!service->listen(addr, 10086))
+    {
+        qDebug()<<" listen error";
+
+    }
+
+
+    QTcpSocket *sock = service->nextPendingConnection();
+    if(sock != Q_NULLPTR)
+    {
+        connect(sock,SIGNAL(disconnected()),sock,SLOT(deleteLater()));
+    }
+
+}
+
+
+

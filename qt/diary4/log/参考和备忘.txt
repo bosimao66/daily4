@@ -1,0 +1,97 @@
+
+
+
+
+
+
+
+参考：
+
+（1）当前路径获取方法
+#include <QDir>
+QString currentPath = QDir::currentPath();
+（2）文件选取对话框
+#incldue <QFileDialog>
+QString path=QFileDialog::getOpenFileName(this,tr("Open　Image"),".",tr("Image　Files(*)"));
+（3）打开文件例子
+#inclde <QFile>
+ QFile file("L:/qtpro/_qtApp/text/t.txt");
+    file.open(QIODevice::ReadOnly | QIODevice::Text);
+    QByteArray t = file.readAll();
+    ui->text_r->setText(QString(t));
+    file.close();
+（4）向文件写入内容例子
+QString e = ui->text_e->toPlainText();
+    QFile file("L:/qtpro/_qtApp/text/e.txt");
+    file.open(QIODevice::WriteOnly | QIODevice::Text);
+    file.write(e.toUtf8());
+    file.close();
+（5）文件保存对话框
+    QString fileName = QFileDialog.getSaveFileName(this,"Open File","","Text File(*.txt)");
+ （6）消息盒子
+ #include <QMessageBox>
+ QMessageBox::warning(this, tr("警告"),tr("这是警告的内容"));
+（7）创建文件、文件夹
+#include <QFile>
+#incldue <QDir>
+
+QDir *qd = new QDir;
+bool b = qd->mkdir("路径");//注不能创建多层路径，只能创建一个文件夹
+
+QFile file("D:\\t.txt");
+file.open(QIODevice::ReadWrite | QIODevice::Text);
+
+（8）快捷键响应
+按键+按键组合，例如ctrl+字母（先ctrl后A触发，先A后ctrl不可触发）：
+#include<QKeyEvent>
+    void MyAPP::keyPressEvent(QKeyEvent *event)
+    {
+        if ((event->modifiers() == Qt::ControlModifier) && (event->key() == Qt::Key_A))
+        {
+            QMessageBox::aboutQt(NULL, "aboutQt");
+        }
+    }
+
+ （9） QString 转换为 QbyteArray
+    QString str("hello");
+    QByteArray bytes = str.toUtf8(); // QString转QByteArray方法1
+
+    QString str("hello");
+    QByteArray bytes = str.toLatin1();  // QString转QByteArray方法2
+
+（10）QByteArray转QString方法
+        QByteArray bytes("hello world");
+        QString string = bytes;   // QByteArray转QString方法1
+
+        QByteArray bytes("hello world");
+        QString string;
+        string.prepend(bytes);// QByteArray转QString方法2
+ （11）调试信息打印
+ #include <QDebug>
+ qDebug()
+
+ （12）选择对话框
+
+        QMessageBox::StandardButton  result=QMessageBox::question(this, "保存", "是否保存文件？",
+                          QMessageBox::Yes|QMessageBox::No |QMessageBox::Cancel,
+                          QMessageBox::NoButton); //缺省是no button
+
+ (13)QDialog 用法
+
+    QDialog *findDlg = new QDialog(this);
+    findDlg->setWindowTitle(tr("查找"));
+    QLineEdit *findLineEdit = new QLineEdit(findDlg);
+    QPushButton *btn= new QPushButton(tr("查找下一个"), findDlg);
+    QVBoxLayout *layout= new QVBoxLayout(findDlg);
+    layout->addWidget(this->findLineEdit);
+    layout->addWidget(btn);
+
+
+    QDialog::show(): 非模态，非阻塞的。
+
+    QDialog::exec(): 模态 ，阻塞，整个系统阻塞掉。
+
+    QDialog::open(): 窗口模态，只会阻塞一个窗口，而不是将整个系统阻塞掉。
+
+
+
